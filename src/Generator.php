@@ -4,6 +4,7 @@ namespace Vigneshc91\LaravelValidationGenerator;
 
 use Doctrine\DBAL\Types\Type;
 use DB;
+use Illuminate\Support\Str;
 
 class Generator
 {
@@ -82,7 +83,7 @@ class Generator
             return 0;
         }
 
-        $tableName = str_singular($tableName);
+        $tableName = Str::camel($tableName);
 
         # Get the rules for all the columns
         foreach($columns as $column) {

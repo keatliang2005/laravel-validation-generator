@@ -2,6 +2,8 @@
 
 namespace Vigneshc91\LaravelValidationGenerator;
 
+use Illuminate\Support\Str;
+
 class Formatter
 {
     protected $rules;
@@ -81,7 +83,7 @@ class Formatter
      */
     protected function getClassName($table, $line)
     {
-        return str_replace('UserRequest', ucfirst(camel_case($table)) . $this->suffix, $line);
+        return str_replace('UserRequest', ucfirst(Str::camel($table)) . $this->suffix, $line);
     }
 
     /**
@@ -121,7 +123,7 @@ class Formatter
      */
     protected function writeToFile($table, $rule)
     {
-        $fileName = $this->destinationFilePath . '/' . ucfirst(camel_case($table)) . $this->suffix . '.php';
+        $fileName = $this->destinationFilePath . '/' . ucfirst(Str::camel($table)) . $this->suffix . '.php';
         $file = fopen($fileName, 'w');
         foreach ($rule as $index => $value) {
             fwrite($file, $value.PHP_EOL);
