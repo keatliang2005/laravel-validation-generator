@@ -13,10 +13,10 @@ class Generator
     protected $rules;
 
     protected $options;
-    
+
     /**
      * Initiate global parameters
-     * 
+     *
      * @param array $options
      */
     public function __construct($options)
@@ -57,7 +57,8 @@ class Generator
         # Convert the array of rules into string
         foreach ($this->rules as $key => $value) {
             foreach ($value as $index => $item) {
-                $this->rules[$key][$index] = implode('|', $item);
+                ## Update to mordern laravel 6.x,7x
+                $this->rules[$key][$index] = $item;
             }
         }
         return $this->rules;
@@ -92,7 +93,7 @@ class Generator
                 $this->rules[$tableName][$columnName] = $this->getColumnRules($column);
             }
         }
-        
+
     }
 
     /**
@@ -110,19 +111,21 @@ class Generator
     /**
      * Check against each type of the column and set the rules
      *
-     * @param Column $column
+     * @param \Doctrine\DBAL\Schema\Column $column
      * @return array
      */
     protected function getRules($column)
     {
         $rule = [];
-        
+
         $type = $column->getType();
         $rule[] = $this->getNullableRule($column);
 
         switch ($type) {
             case Type::getType('integer'):
+            case Type::getType('bigint'):
                 $rule[] = 'integer';
+                $rule[] = 'digits_between:0,' . $column->getPrecision();
                 break;
             case Type::getType('string'):
                 $rule[] = 'string';
@@ -144,7 +147,9 @@ class Generator
                 $rule[] = 'date_format:H:i:s';
                 break;
             case Type::getType('float'):
+            case Type::getType('decimal'):
                 $rule[] = 'numeric';
+                $rule[] = 'regex:/^\d{1,'.$column->getPrecision().'}(\.\d{1,'.$column->getScale().'})?$/';
                 break;
             case Type::getType('json'):
                 $rule[] = 'json';

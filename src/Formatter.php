@@ -25,20 +25,20 @@ class Formatter
     /**
      * Initiate default values
      *
-     * @param array $rules
-     * @param array $options
+     * @param  array  $rules
+     * @param  array  $options
      */
     public function __construct($rules, $options)
     {
-        $this->rules = $rules;
-        $this->file = __DIR__.'/Request/UserRequest.php';
-        $this->suffix = $options['suffix'];
-        $this->directory = $options['directory'];
-        $this->destinationFilePath = app_path('Http/Requests/' . $this->directory);
-        $this->namespace = 'namespace App\Http\Requests' . ($this->directory ? '\\' . $this->directory : '') . ';';
-        $this->format = $options['format'];
+        $this->rules               = $rules;
+        $this->file                = __DIR__.'/Request/UserRequest.php';
+        $this->suffix              = $options['suffix'];
+        $this->directory           = $options['directory'];
+        $this->destinationFilePath = app_path('Http/Requests/'.$this->directory);
+        $this->namespace           = 'namespace App\Http\Requests'.($this->directory ? '\\'.$this->directory : '').';';
+        $this->format              = $options['format'];
         $this->createDirectory();
-    }   
+    }
 
     /**
      * Format the given input rules
@@ -55,7 +55,7 @@ class Formatter
                 $this->handleConsoleFormat();
                 break;
         }
-        
+
     }
 
     /**
@@ -66,10 +66,10 @@ class Formatter
     protected function handleFileFormat()
     {
         foreach ($this->rules as $key => $value) {
-            $lines = file($this->file, FILE_IGNORE_NEW_LINES);
+            $lines    = file($this->file, FILE_IGNORE_NEW_LINES);
             $lines[2] = $this->namespace;
             $lines[6] = $this->getClassName($key, $lines[6]);
-            $rule = $this->getFormattedRule($lines, $value);
+            $rule     = $this->getFormattedRule($lines, $value);
             $this->writeToFile($key, $rule);
         }
     }
@@ -77,13 +77,13 @@ class Formatter
     /**
      * Get the class name for the form request file
      *
-     * @param string $table
-     * @param string $line
+     * @param  string  $table
+     * @param  string  $line
      * @return string
      */
     protected function getClassName($table, $line)
     {
-        return str_replace('UserRequest', ucfirst(Str::camel($table)) . $this->suffix, $line);
+        return str_replace('UserRequest', ucfirst(Str::camel($table)).$this->suffix, $line);
     }
 
     /**
@@ -99,38 +99,44 @@ class Formatter
     /**
      * Get the formatted rules for printing into the file
      *
-     * @param array $lines
-     * @param array $rule
+     * @param  array  $lines
+     * @param  array  $rule
      * @return void
      */
     protected function getFormattedRule($lines, $rule)
     {
-        $rule = json_encode($rule);
-        $rule = str_replace(['{', '}'], '', $rule);
+        $rule = json_encode($rule, JSON_UNESCAPED_SLASHES);
+
+        //regex specific fix for decimal regex
+        $rule = preg_replace('/\\\d{/', 'd{', $rule);
+        $rule = preg_replace('/\(\\\./', '(\\', $rule);
+        $rule = preg_replace('/^\{/', '', $rule);
+        $rule = preg_replace('/\}$/', '', $rule);
+
         $rule = "\t\t\t".$rule;
         $rule = str_replace('":', '" => ', $rule);
-        $rule = str_replace(',', ",\n\t\t\t", $rule);
-        $rule = array_merge(array_slice($lines, 0, 26) , [$rule] , array_slice($lines, 27));
+        $rule = str_replace('],', "],\n\t\t\t", $rule);
+        $rule = array_merge(array_slice($lines, 0, 26), [$rule], array_slice($lines, 27));
         return $rule;
     }
 
     /**
      * Write the string into the file
      *
-     * @param string $table
-     * @param string $rule
+     * @param  string  $table
+     * @param  string  $rule
      * @return void
      */
     protected function writeToFile($table, $rule)
     {
-        $fileName = $this->destinationFilePath . '/' . ucfirst(Str::camel($table)) . $this->suffix . '.php';
-        $file = fopen($fileName, 'w');
+        $fileName = $this->destinationFilePath.'/'.ucfirst(Str::camel($table)).$this->suffix.'.php';
+        $file     = fopen($fileName, 'w');
         foreach ($rule as $index => $value) {
             fwrite($file, $value.PHP_EOL);
         }
         fclose($file);
 
-        echo "\033[32m". basename($fileName). ' Created Successfully'. PHP_EOL;
+        echo "\033[32m".basename($fileName).' Created Successfully'.PHP_EOL;
     }
 
 
@@ -142,7 +148,7 @@ class Formatter
     protected function createDirectory()
     {
         $dirName = $this->destinationFilePath;
-        if(!is_dir($dirName)) {
+        if (!is_dir($dirName)) {
             mkdir($dirName, 0755, true);
         }
     }
