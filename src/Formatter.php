@@ -93,7 +93,17 @@ class Formatter
      */
     protected function handleConsoleFormat()
     {
-        print_r($this->rules);
+        $output = new ConsoleOutput();
+        //regex specific fix for decimal
+        $rule = preg_replace('/\\\d{/', 'd{', json_encode(reset($this->rules), JSON_UNESCAPED_SLASHES));
+        $rule = preg_replace('/\(\\\./', '(\\', $rule);
+        $rule = preg_replace('/^\{/', '', $rule);
+        $rule = preg_replace('/\}$/', '', $rule);
+
+        $rule = "\t\t\t".$rule . "\n";
+        $rule = str_replace('":', '" => ', $rule);
+        $rule = str_replace('],', "],\n\t\t\t", $rule);
+        $output->write( $rule);
     }
 
     /**

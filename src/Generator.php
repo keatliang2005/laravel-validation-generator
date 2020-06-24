@@ -125,7 +125,7 @@ class Generator
             case Type::getType('integer'):
             case Type::getType('bigint'):
                 $rule[] = 'integer';
-                $rule[] = 'digits_between:0,' . $column->getPrecision();
+                $rule[] = 'digits_between:0,'.($column->getUnsigned() ? (string) ($column->getPrecision() * 2) : ($column->getPrecision() + 1));
                 break;
             case Type::getType('string'):
                 $rule[] = 'string';
