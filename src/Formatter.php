@@ -3,6 +3,7 @@
 namespace Vigneshc91\LaravelValidationGenerator;
 
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Formatter
 {
